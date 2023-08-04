@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import * as yup from 'yup';
@@ -26,10 +26,39 @@ const RegistrationForm = () => {
         handleSubmit,
         control,
         formState: { errors },
+        setValue,
+        getValues,
       } = useForm({
         resolver: yupResolver(schema),
         mode: 'onChange',
       });
+    
+      const [showPasswordFields, setShowPasswordFields] = useState(false);
+      const [showOthFields, setShowOthFields] = useState(false);
+
+    
+      const email = getValues('email');
+      const confirmEmail = getValues('confirmEmail');
+      const password = getValues('password');
+      const confirmPassword = getValues('confirmPassword');
+      useEffect(() => {
+        if (typeof email !== "undefined" && typeof confirmEmail !== "undefined") {
+            if (email === confirmEmail) {
+                setShowPasswordFields(true);
+            }else{
+            setShowPasswordFields(false)
+            }
+        }
+
+        if (typeof password !== "undefined" && typeof confirmPassword !== "undefined") {
+            if (password === confirmPassword) {
+                setShowOthFields(true);
+            }else{
+            setShowOthFields(false)
+            }
+        }
+
+      }, [email, confirmEmail, password, confirmPassword]);
     
       const onSubmit = (data) => {
         console.log(data);
@@ -62,36 +91,39 @@ const RegistrationForm = () => {
         />
       )}
     />
+ {showPasswordFields && ( // Only show the password fields when email fields match
+        <>
+          <Controller
+            name="password"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="password"
+                label="Password"
+                error={!!errors.password}
+                helperText={errors.password?.message}
+              />
+            )}
+          />
 
-    <Controller
-      name="password"
-      control={control}
-      render={({ field }) => (
-        <TextField
-          {...field}
-          type="password"
-          label="Password"
-          error={!!errors.password}
-          helperText={errors.password?.message}
-        />
+          <Controller
+            name="confirmPassword"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="password"
+                label="Confirm Password"
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
+              />
+            )}
+          />
+        </>
       )}
-    />
 
-    <Controller
-      name="confirmPassword"
-      control={control}
-      render={({ field }) => (
-        <TextField
-          {...field}
-          type="password"
-          label="Confirm Password"
-          error={!!errors.confirmPassword}
-          helperText={errors.confirmPassword?.message}
-        />
-      )}
-    />
-
-    <Controller
+{ showOthFields &&  <>   <Controller
       name="name"
       control={control}
       render={({ field }) => (
@@ -119,6 +151,8 @@ const RegistrationForm = () => {
         </FormControl>
       )}
     />
+    
+    </>}
 
     <Button type="submit" variant="contained" color="primary">
       Submit
